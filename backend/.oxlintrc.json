@@ -1,0 +1,12 @@
+{
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "oxc/no-async-endpoint-handlers": "off",
+    "unicorn/require-module-specifiers": "off",
+    "eslint/no-shadow": "warn",
+    "unicorn/no-array-sort": "warn"
+  }
+}
