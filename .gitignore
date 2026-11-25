@@ -24,3 +24,6 @@ Thumbs.db
 
 # generiran Prisma client
 backend/src/generated/
+
+# coverage reports
+coverage/
