@@ -59,6 +59,12 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+      - name: Configure Netlify routing
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
+        run: |
+          printf '/api/* %s/api/:splat 200\n/* /index.html 200\n' "$BACKEND_URL" > frontend/dist/_redirects
+
       - name: Install backend dependencies
         working-directory: backend
         run: npm ci
@@ -174,3 +180,21 @@ jobs:
             --no-gitignore \
             --service gigspot-backend \
             --ci
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: deployment/frontend
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Deploy frontend to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          netlify deploy \
+            --dir=deployment/frontend \
+            --prod
