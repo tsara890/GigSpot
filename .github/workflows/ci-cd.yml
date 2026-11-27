@@ -173,6 +173,17 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Check Railway authentication
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "Railway token is missing"
+            exit 1
+          fi
+          echo "Railway token is present"
+          npx -y @railway/cli service list
+
       - name: Deploy backend to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
