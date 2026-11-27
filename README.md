@@ -100,3 +100,21 @@ Delamo po GitHub Flow. Spremembe gredo na lastno vejo, v `main` pa samo prek pul
 
 Veja `main` je zaščitena, force push in brisanje veje sta onemogočena.
 
+## CI/CD
+
+[![CI/CD](https://github.com/tsara890/GigSpot/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/tsara890/GigSpot/actions/workflows/ci-cd.yml)
+
+### Nameščena aplikacija
+
+- Frontend: [GigSpot](https://vermillion-sunflower-9100b8.netlify.app)
+- Backend: [Railway API](https://gigspot-backend-production-9dd71a8c.up.railway.app/api/health)
+- Podatkovna baza: PostgreSQL (Railway)
+
+### Faze CI/CD cevovoda
+
+- **Lint:** preverjanje kakovosti kode frontenda in backenda z Oxlint.
+- **Build:** gradnja aplikacije, predpomnjenje odvisnosti in shranjevanje rezultatov gradnje kot artefaktov.
+- **Test:** izvajanje 15 avtomatiziranih testov z Vitest in shranjevanje poročil o pokritosti kode.
+- **Deploy:** samodejna namestitev frontenda na Netlify in backenda na Railway z uporabo artefaktov iz faze build.
+
+Cevovod se sproži ob vsakem pull requestu v vejo main in ob vsakem pushu na main. Namestitev se izvede samo ob pushu na main, če so vse predhodne faze uspešne. Veja main je zaščitena z obveznimi preverjanji lint, build in test.
