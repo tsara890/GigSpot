@@ -137,51 +137,40 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
 
-    permissions:
-      contents: read
-      packages: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Download backend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-build
-          path: backend/dist
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Package backend Docker image
-        run: |
-          docker build \
-            -t ghcr.io/tsara890/gigspot-backend:${{ github.sha }} \
-            ./backend
-
-      - name: Push Docker image
-        run: |
-          docker push ghcr.io/tsara890/gigspot-backend:${{ github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
+      - name: Prepare backend deployment directory
+        run: |
+          mkdir -p deployment/backend
+          cp backend/package.json deployment/backend/
+          cp backend/package-lock.json deployment/backend/
+          cp backend/Dockerfile deployment/backend/
+          cp backend/.dockerignore deployment/backend/
+          cp backend/prisma.config.ts deployment/backend/
+          cp -r backend/prisma deployment/backend/
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build
+          path: deployment/backend/dist
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
       - name: Deploy backend to Railway
         env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          npx -y @railway/cli link \
-            --project 0de070bf-83b0-491b-8277-b7b8e4dc4343 \
-            --environment production \
-            --service gigspot-backend
-
-          npx -y @railway/cli service source connect \
-            --image ghcr.io/tsara890/gigspot-backend:${{ github.sha }} \
-            --service gigspot-backend
+          railway up ./deployment/backend \
+            --path-as-root \
+            --no-gitignore \
+            --service gigspot-backend \
+            --ci
