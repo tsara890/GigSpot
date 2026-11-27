@@ -173,23 +173,12 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Check Railway authentication
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "Railway token is missing"
-            exit 1
-          fi
-          echo "Railway token is present"
-          npx -y @railway/cli service list
-
       - name: Deploy backend to Railway
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
           npx -y @railway/cli link \
-            --project YOUR_PROJECT_ID \
+            --project 0de070bf-83b0-491b-8277-b7b8e4dc4343 \
             --environment production \
             --service gigspot-backend
 
