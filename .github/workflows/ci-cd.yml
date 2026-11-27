@@ -186,9 +186,13 @@ jobs:
 
       - name: Deploy backend to Railway
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
+          npx -y @railway/cli link \
+            --project YOUR_PROJECT_ID \
+            --environment production \
+            --service gigspot-backend
+
           npx -y @railway/cli service source connect \
             --image ghcr.io/tsara890/gigspot-backend:${{ github.sha }} \
-            --service gigspot-backend \
-            --environment production
+            --service gigspot-backend
