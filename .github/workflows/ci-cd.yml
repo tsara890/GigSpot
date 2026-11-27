@@ -130,3 +130,54 @@ jobs:
           name: backend-coverage
           path: backend/coverage/
           if-no-files-found: error
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [lint, build, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build
+          path: backend/dist
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package backend Docker image
+        run: |
+          docker build \
+            -t ghcr.io/tsara890/gigspot-backend:${{ github.sha }} \
+            ./backend
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/tsara890/gigspot-backend:${{ github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Deploy backend to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          npx -y @railway/cli service source connect \
+            --image ghcr.io/tsara890/gigspot-backend:${{ github.sha }} \
+            --service gigspot-backend \
+            --environment production
